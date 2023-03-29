@@ -60,10 +60,10 @@ def fasta_iter(fastafile):
         header = next(header)[1:].strip()
         seq = "".join(s.strip() for s in next(faiter))
         yield header, seq
-        
+
 def distMat2indList(mat,thr=0.1):
-    math_thr = np.where(mat >= thr, 1, 0) 
-    
+    math_thr = np.where(mat >= thr, 1, 0)
+
     # Remove self-referencing indices and duplicates
     filtered_indices = set()
     for index in np.argwhere(math_thr == 1):
@@ -76,31 +76,38 @@ def distMat2indList(mat,thr=0.1):
 @click.command()
 @click.option('-s','--seq', help='Sequence itself or a FASTA file')
 @click.option('-o','--out', default='out', help='Output file prefix')
-@click.option('-t','--thr', default=0.2, help='Threshold for contact')
+@click.option('-t','--thr', default=0.02, help='Threshold for contact')
 def embed(seq, out,thr):
     """A program that generates PROST embeddings and extracts contacts based on attention maps"""
-    if '.fasta' in seq or '.fa' in seq: 
+    names = []
+    seqs = []
+    if '.fasta' in seq or '.fa' in seq:
         for f in fasta_iter(seq):
-            name = f[0]
-            s = f[1]
-            break
+            names.append(f[0])
+            seqs.append(f[1])
     else:
-        s = seq
-        n = 'seq1'
-    print(n,s)
-    l13,l25,cnt = _embed(s)
-    q25_544 = quant2D(l25,5,44)
-    q13_385 = quant2D(l13,3,85)
-    emb = np.concatenate([q25_544,q13_385])
-    
-    with open(out+'.prdb','wb') as f:
-        f.write(blosc.compress(dumps([np.array([n]),np.array([emb])])))
+        seqs.append(seq)
+        names.append('seq1')
+    for i in range(len(seqs)):
+        n = names[i]
+        s = seqs[i]
 
-    cnt_lst = distMat2indList(cnt,float(thr))
-    
-    with open(out+'.cnt.txt','w') as f:
-        for c in cnt_lst:
-            f.write('%d %d\n'%(c[0],c[1]))
-            
+        l13,l25,cnt = _embed(s)
+        q25_544 = quant2D(l25,5,44)
+        q13_385 = quant2D(l13,3,85)
+        emb = np.concatenate([q25_544,q13_385])
+
+        with open(out+'.%d.prdb'%i,'wb') as f:
+            f.write(blosc.compress(dumps([np.array([n]), np.array([emb])])))
+
+        cnt_lst = distMat2indList(cnt,float(thr))
+
+        with open(out+'.%d.cnt.txt'%i,'w') as f:
+            for c in cnt_lst:
+                f.write('%d %d\n'%(c[0],c[1]))
+    with open(out+'.names.txt','w') as f:
+        for i in range(len(names)):
+            f.write('%d\t%s\n'%(i, names[i]))
+
 if __name__ == '__main__':
     embed()

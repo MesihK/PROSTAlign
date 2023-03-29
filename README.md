@@ -1,7 +1,11 @@
 ### Workflow
 
-`embed.py` embeds given sequence and also creates attention based contact map with given threshold. This threshold is a score threshold and ranges between 0 and 1. The higher the score the more corelated the residues are. 0.02 and above is a good indicator of correlation. It generates two files `out.prdb` and `out.cnt.txt`. The `prdb` can be used with PROST to search a database like this `prost searchsp --thr 0.05 out.prdb results.tsv`
-
+* `embed.py` embeds given sequence and also creates attention based contact map with given threshold. This threshold is a score threshold and ranges between 0 and 1. The higher the score the more corelated the residues are. 0.02 and above is a good indicator of correlation.
+* It generates two files `out.prdb` and `out.cnt.txt`. The `prdb` can be used with PROST to search a database like this `prost searchsp --thr 0.05 out.prdb results.tsv`
+* ESM1b only accepts sequences upto 1022 aa length. Due to this contact map generation is limited to lenght of 1022 aa.
+* If a fasta file wiht multiple sequences given, `embed.py` will generate a set of `[$(out).$(i).prdb, $(out).$(i)cnt.txt]` files for each sequence and a name mapping file `$(out).names.txt
+* Use `embed.py` to embed sequences in one go by giving multiple sequences with a fasta file because loading the language model will take at least 30sec. 
+If you embed one by one, you'll have an overhead of 30sec for each.
 ```
 Usage: embed.py [OPTIONS]
 
