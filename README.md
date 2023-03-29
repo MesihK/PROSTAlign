@@ -1,9 +1,9 @@
-### Workflow
+### Embeding & Attention Correlation 
 
 * `embed.py` embeds given sequence and also creates attention based contact map with given threshold. This threshold is a score threshold and ranges between 0 and 1. The higher the score the more corelated the residues are. 0.02 and above is a good indicator of correlation.
 * It generates two files `out.prdb` and `out.cnt.txt`. The `prdb` can be used with PROST to search a database like this `prost searchsp --thr 0.05 out.prdb results.tsv`
 * ESM1b only accepts sequences upto 1022 aa length. Due to this contact map generation is limited to lenght of 1022 aa.
-* If a fasta file wiht multiple sequences given, `embed.py` will generate a set of `[$(out).$(i).prdb, $(out).$(i)cnt.txt]` files for each sequence and a name mapping file `$(out).names.txt
+* If a fasta file wiht multiple sequences given, `embed.py` will generate a set of `[$(out).$(i).prdb, $(out).$(i).cnt.txt]` files for each sequence and a name mapping file `$(out).names.txt`
 * Use `embed.py` to embed sequences in one go by giving multiple sequences with a fasta file because loading the language model will take at least 30sec. 
 If you embed one by one, you'll have an overhead of 30sec for each.
 ```
@@ -21,7 +21,13 @@ Options:
 python embed.py  -s YLGLPVTPEDMALLKEQLFAELAILPENTRINKVGENSFQIWVASENVKNQITETYPSGQITLSNAVTKVEFIFGD -t 0.02
 ```
 
-`align.py` takes two sequences `s1` and `s2` and a contact map `c1` to produce contact based alignment. The 400x400 matrix can be selected with `-c` option. The score is calcualted like this `w*(400x400matrixScore) + (20x20matrixScore)`. 20x20 matrix can be selected via `-m` switch. The weight of 400x400 matrix can be selected with `-w` option.
+### Alignment with Contact Map and 400x400 matrix
+
+* `align.py` takes two sequences `s1` and `s2` and a contact map `c1` to produce contact based alignment.
+* The 400x400 matrix can be selected with `-c` option.
+* The score is calcualted like this `w*(400x400matrixScore) + (20x20matrixScore)`.
+* 20x20 matrix can be selected via `-m` switch.
+* The weight of 400x400 matrix can be selected with `-w` option.
 
 ```
 usage: align.py [-h] [-s1 S1] [-c1 C1] [-s2 S2] [-o O] [-e E] [-g] [-c C] [-w W] [-m M]
@@ -59,3 +65,4 @@ YLGLPVTPEDMALLKEQLFAELAILPENTRINKV..GENSFQIWVASENVKNQITETYPSGQITLSNAVTKVEFIFGD
 FSG.NCTMEDAKLAQDFLDSQ.NLSAYNTRLFKEVDGEGKPYYEVRLASVLGSESEVT.SKLKSYEFRGSPFQVTRGD
 
 ```
+These examples sequences are from Protsub paper. `3csk` and `3fvy`.
